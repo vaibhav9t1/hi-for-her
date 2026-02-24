@@ -1,84 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>For You ❤️</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-      font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
-    }
+<meta charset="UTF-8">
+<title>Hey You 🙂</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  margin: 0;
+  background: black;
+  color: white;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+}
 
-    h1 {
-      font-size: 5rem;
-      color: white;
-      opacity: 0;
-      transform: scale(0.5);
-      transition: all 1s ease;
-      text-shadow: 0 0 20px rgba(255,255,255,0.8);
-    }
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 
-    .show {
-      opacity: 1;
-      transform: scale(1.2);
-    }
+#text {
+  font-size: 2rem;
+  text-align: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
 
-    .heart {
-      position: absolute;
-      color: white;
-      font-size: 20px;
-      animation: floatUp 5s linear infinite;
-      opacity: 0.8;
-    }
+.cursor {
+  display: inline-block;
+  width: 2px;
+  background: white;
+  margin-left: 5px;
+  animation: blink 1s infinite;
+}
 
-    @keyframes floatUp {
-      from {
-        transform: translateY(100vh);
-        opacity: 1;
-      }
-      to {
-        transform: translateY(-10vh);
-        opacity: 0;
-      }
-    }
-  </style>
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
+}
+</style>
 </head>
 <body>
 
-<h1 id="hiText">Hi Hi Hi</h1>
+<canvas id="fireworks"></canvas>
+<div id="text"></div>
 
 <script>
-  // Pop-up animation
-  window.onload = () => {
-    setTimeout(() => {
-      document.getElementById("hiText").classList.add("show");
-    }, 500);
-  };
+// Fireworks
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-  // Floating hearts
-  function createHeart() {
-    const heart = document.createElement("div");
-    heart.classList.add("heart");
-    heart.innerHTML = "❤️";
-    heart.style.left = Math.random() * 100 + "vw";
-    heart.style.fontSize = (Math.random() * 20 + 10) + "px";
-    heart.style.animationDuration = (Math.random() * 3 + 2) + "s";
-    document.body.appendChild(heart);
+let particles = [];
 
-    setTimeout(() => {
-      heart.remove();
-    }, 5000);
+function createFirework(x, y) {
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: x,
+      y: y,
+      radius: 2,
+      color: `hsl(${Math.random() * 360},100%,50%)`,
+      speedX: (Math.random() - 0.5) * 5,
+      speedY: (Math.random() - 0.5) * 5,
+      alpha: 1
+    });
   }
+}
 
-  setInterval(createHeart, 300);
+function animate() {
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  particles.forEach((p, index) => {
+    p.x += p.speedX;
+    p.y += p.speedY;
+    p.alpha -= 0.02;
+
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (p.alpha <= 0) particles.splice(index, 1);
+  });
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+setInterval(() => {
+  createFirework(Math.random() * canvas.width, Math.random() * canvas.height / 2);
+}, 1500);
+
+// Typing effect
+const messages = [
+  "Hi 🙂",
+  "Just wanted to make you smile today.",
+  "Hope this worked."
+];
+
+let i = 0;
+let j = 0;
+let currentMessage = "";
+const textDiv = document.getElementById("text");
+
+function type() {
+  if (i < messages.length) {
+    if (j < messages[i].length) {
+      currentMessage += messages[i][j];
+      textDiv.innerHTML = currentMessage + '<span class="cursor"></span>';
+      textDiv.style.opacity = 1;
+      j++;
+      setTimeout(type, 50);
+    } else {
+      setTimeout(() => {
+        currentMessage = "";
+        j = 0;
+        i++;
+        type();
+      }, 1500);
+    }
+  }
+}
+
+setTimeout(type, 2000);
 </script>
 
 </body>
